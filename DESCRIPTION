@@ -1,0 +1,19 @@
+Package: VoronoiPlus
+Type: Package
+Title: Create And Manipulate Voronoi Maps And Treemaps
+Version: 0.1.0
+Author: Allan Cameron
+Authors@R: c(
+    person(given = "Allan",
+           family = "Cameron",
+           role = c("aut", "cre"),
+           email = "Allan.Cameron@nhs.scot"))
+Description: Allows the creation and manipulation of Voronoi tassellations.
+    The tasselations can be done inside arbitrary shapes and their areas
+    proportional to weights.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports:
+  terra
+LazyData: true
+RoxygenNote: 7.2.1
