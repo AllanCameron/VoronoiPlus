@@ -21,7 +21,7 @@ voronoi_map <- function(values, groups, shape, seed,
     shape <- terra::buffer(terra::vect(cbind(0, 0),
                                        crs = "+proj=utm +zone=1"), 1, 30)
   }
-
+  groups <- factor(groups, unique(groups))
   set.seed(seed)
   tass <- terra::spatSample(shape, length(groups))
   res <- terra::crop(terra::voronoi(tass, bnd = shape), shape)
@@ -33,7 +33,7 @@ voronoi_map <- function(values, groups, shape, seed,
               values = values,
               shape = shape),
             class = "voronoi_map")
-  for(i in 1:5) res <- centralize(res)
+  for(i in 1:10) res <- centralize(res)
   for(i in seq(iter)) {
     res <- improve_weights(res)
     if(rmse(res) < accuracy) break;
@@ -178,16 +178,13 @@ push_vec <- function(tass, index) {
 # Find the most disproportionate area and push or pull the other points from it
 
 improve_weights <- function(tass) {
-  orig <- terra::crds(tass$sites)
-  weights <- tass$values/sum(tass$values)
-  areas <- tass$areas
-  diff <- areas - weights
-  ind <- which.max(abs(diff))
-  pushvec <- push_vec(tass, ind) * -diff[ind]
-
-  pts <- orig + pushvec
-  pts <- terra::vect(pts, 'points', crs = terra::crs(tass$shape))
-  update_from_points(tass, pts)
+    orig <- terra::crds(tass$sites)
+    regions <- terra::intersect(terra::buffer(tass$sites, 0.1), tass$shape)
+    pts <- terra::vect(t(sapply(seq_along(regions), function(x) {
+      terra::crds(terra::spatSample(regions[x], 1))
+      })), type = "points", crs = terra::crs(regions))
+    tass2 <- update_from_points(tass, pts)
+    if(rmse(tass) > rmse(tass2)) tass2 else tass
 }
 
 #-------------------------------------------------------------------------------
